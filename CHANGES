@@ -1,3 +1,9 @@
+2000/01/19
+
+Added -showhex option which if set to 1, (default is 0), will show the hex
+value of the colour in the title bar.
+
+
 1999/10/01
 
 Changed the Show() method so that it is now compatible with Tk800.015 as well
@@ -67,5 +73,4 @@ of valid colour name inputs.
 1999/01/29  
 
 First version.
-
 

@@ -28,6 +28,7 @@ ColourChooser - Perl/Tk module providing a Colour selection dialogue box.
                         -colour      => '0A057C',
                         -transparent => 0,
                         -hexonly     => 1,
+                        -showhex     => 1,
                         ) ;
 
 =head1 DESCRIPTION
@@ -45,11 +46,11 @@ clicking the colour list.
 =over 4
 
 =item C<-language>
-This is optional and allows you to set the language for the title and labels.
-Valid values are C<en> (english), C<de> (german), C<fr> (french) and
-C<english> (for backward compatibility) which is also the default.
-Translations are by Babelfish. Other languages will be added if people provide
-translations.
+This is optional. Default is `en'. This option allows you to set the language
+for the title and labels. Valid values are C<en> (english), C<de> (german),
+C<fr> (french) and C<english> (for backward compatibility) which is also the
+default. Translations are by Babelfish. Other languages will be added if
+people provide translations.
 
 =item C<-title>  
 This is optional and allows you to set the title. Default is 'Colour Chooser'
@@ -70,6 +71,11 @@ no name. Transparent is always returned as 'None' however. Default is 0.
 =item C<-transparent>
 This is optional. If set to 0 it stops ColourChooser offering the Transparent
 button so that only valid colours may be chosen - or cancel. Default is 1.
+
+=item C<-showhex>
+This is optional. If set to 1 it shows the hex value of the colour in the
+title bar. Default is 0.
+
 =back
 
 The user has three options: 
@@ -109,23 +115,27 @@ you will only be able to specify colours by RGB value.
 
 =head1 BUGS
 
-ColourChooser does almost no error checking.
+Does almost no error checking.
 
-ColourChooser can be slow to load because rgb.txt is large.
+Can be slow to load because rgb.txt is large.
+
+If you scroll the list by keyboard or use the mouse to move the colour sliders
+the colour updates as you go; but if you use the mouse on the scrollbar you
+must click the colour name box for the colour to update. I don't know why this
+is and any advice on how to fix it would be welcome.
 
 =head1 AUTHOR
 
-Mark Summerfield. I can be contacted as <summer@chest.ac.uk> -
+Mark Summerfield. I can be contacted as <summer@perlpress.com> -
 please include the word 'colourchooser' in the subject line.
 
 The code draws from Stephen O. Lidie's work.
 
 =head1 COPYRIGHT
 
-Copyright (c) Mark Summerfield 1999. All Rights Reserved.
+Copyright (c) Mark Summerfield 1999-2000. All Rights Reserved.
 
 This module may be used/distributed/modified under the LGPL. 
 
 =cut
-
 

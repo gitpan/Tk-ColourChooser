@@ -10,7 +10,7 @@ WriteMakefile(
     ($] >= 5.005 ?
         (
             ABSTRACT => 'Colour selection dialogue box.',
-            AUTHOR   => 'Mark Summerfield <summer@chest.ac.uk>',
+            AUTHOR   => 'Mark Summerfield <summer@perlpress.com>',
         ) : () ),
     'LIBS'         => [''],   # e.g., '-lm'
     'DEFINE'       => '',     # e.g., '-DHAVE_SOMETHING'

@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.27 1999/10/01 20:16:34 root Exp root $
+# $Id: ColourChooser.pm,v 1.29 2000/01/19 22:35:53 root Exp root $
 
 require 5.004 ;
 
@@ -13,18 +13,18 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.40' ;
+$VERSION = '1.41' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
 Construct Tk::Widget 'ColourChooser' ;
-
 
 #############################
 sub Populate { 
     my( $win, $args ) = @_ ;
 
     $win->{-language} = delete $args->{-language} || 'en' ; 
+    $win->{-showhex}  = delete $args->{-showhex}  || 0 ;
     $win->{-language} = 'en' if $win->{-language} eq 'english' ; # Backward compatibility.
     $args->{-title}   = $Translate{$win->{-language}}{-title} 
                         unless defined $args->{-title} ;
@@ -139,7 +139,6 @@ sub Populate {
     $win->{-colour} = undef ;
 }
 
-
 #############################
 sub _canonical_colour {
     local $_ = lc shift ; 
@@ -155,7 +154,6 @@ sub _canonical_colour {
 
     $_ ; 
 }
-
 
 #############################
 sub _name2hex {
@@ -204,7 +202,6 @@ sub _name2hex {
     $hex or '000000' ;
 }
 
-
 #############################
 sub _find_rgb {
 
@@ -220,7 +217,6 @@ sub _find_rgb {
 
     undef ;
 }
-
 
 #############################
 sub _read_rgb {
@@ -249,7 +245,6 @@ sub _read_rgb {
     $win->{NAME}{' Unnamed'} = '0000000' ;
 }
 
-
 #############################
 sub _listbox_scroll {
     my( $scrollbar, $list, $win, @args ) = @_ ;
@@ -259,7 +254,6 @@ sub _listbox_scroll {
     $list->activate( $index ) ;
     $list->selectionSet( $index ) ;
 }
-
 
 #############################
 sub _set_colour {
@@ -277,9 +271,8 @@ sub _set_colour {
     }
     &_set_list( $win, $index ) ;
 
-    $win->{COLOUR_FRAME}->configure( -bg => "#$hex" ) ;
+    &_update_colour( $win, $hex ) ; 
 }
-
 
 #############################
 sub _set_colour_from_list {
@@ -292,6 +285,19 @@ sub _set_colour_from_list {
     $win->{-green} = hex( substr( $hex, 2, 2 ) ) ; 
     $win->{-blue}  = hex( substr( $hex, 4, 2 ) ) ; 
 
+    &_update_colour( $win, $hex ) ; 
+}
+
+
+#############################
+sub _update_colour {
+    my( $win, $hex ) = @_ ;
+
+    if( $win->{-showhex} ) {
+        my $title = $win->cget( -title ) ;
+        $title = substr( $title, 0, index( $title, ' -' ) ) ;
+        $win->configure( -title, "$title - #$hex" ) ;
+    }
     $win->{COLOUR_FRAME}->configure( -bg => "#$hex" ) ;
 }
 
@@ -305,7 +311,6 @@ sub _set_list {
     $list->see( $index ) ;
     $list->selectionSet( $index ) ;
 }
-
 
 #############################
 sub Show {
@@ -321,7 +326,6 @@ sub Show {
 
     $win->{-colour} ;
 }
-
 
 #############################
 sub _close {
@@ -352,7 +356,6 @@ sub _close {
 
     $win->{-colour} ;
 }
-
 
 #############################
 BEGIN {
@@ -387,9 +390,7 @@ BEGIN {
          ) ;
 }
 
-
 1 ;
-
 
 __END__
 
@@ -423,6 +424,7 @@ ColourChooser - Perl/Tk module providing a Colour selection dialogue box.
                         -colour      => '0A057C',
                         -transparent => 0,
                         -hexonly     => 1,
+                        -showhex     => 1,
                         ) ;
 
 =head1 DESCRIPTION
@@ -440,11 +442,11 @@ clicking the colour list.
 =over 4
 
 =item C<-language>
-This is optional and allows you to set the language for the title and labels.
-Valid values are C<en> (english), C<de> (german), C<fr> (french) and
-C<english> (for backward compatibility) which is also the default.
-Translations are by Babelfish. Other languages will be added if people provide
-translations.
+This is optional. Default is `en'. This option allows you to set the language
+for the title and labels. Valid values are C<en> (english), C<de> (german),
+C<fr> (french) and C<english> (for backward compatibility) which is also the
+default. Translations are by Babelfish. Other languages will be added if
+people provide translations.
 
 =item C<-title>  
 This is optional and allows you to set the title. Default is 'Colour Chooser'
@@ -465,6 +467,11 @@ no name. Transparent is always returned as 'None' however. Default is 0.
 =item C<-transparent>
 This is optional. If set to 0 it stops ColourChooser offering the Transparent
 button so that only valid colours may be chosen - or cancel. Default is 1.
+
+=item C<-showhex>
+This is optional. If set to 1 it shows the hex value of the colour in the
+title bar. Default is 0.
+
 =back
 
 The user has three options: 
@@ -504,23 +511,27 @@ you will only be able to specify colours by RGB value.
 
 =head1 BUGS
 
-ColourChooser does almost no error checking.
+Does almost no error checking.
 
-ColourChooser can be slow to load because rgb.txt is large.
+Can be slow to load because rgb.txt is large.
+
+If you scroll the list by keyboard or use the mouse to move the colour sliders
+the colour updates as you go; but if you use the mouse on the scrollbar you
+must click the colour name box for the colour to update. I don't know why this
+is and any advice on how to fix it would be welcome.
 
 =head1 AUTHOR
 
-Mark Summerfield. I can be contacted as <summer@chest.ac.uk> -
+Mark Summerfield. I can be contacted as <summer@perlpress.com> -
 please include the word 'colourchooser' in the subject line.
 
 The code draws from Stephen O. Lidie's work.
 
 =head1 COPYRIGHT
 
-Copyright (c) Mark Summerfield 1999. All Rights Reserved.
+Copyright (c) Mark Summerfield 1999-2000. All Rights Reserved.
 
 This module may be used/distributed/modified under the LGPL. 
 
 =cut
-
 
