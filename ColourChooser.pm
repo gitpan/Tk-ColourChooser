@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.20 1999/08/08 15:17:31 root Exp $
+# $Id: ColourChooser.pm,v 1.21 1999/08/29 19:12:39 root Exp root $
 
 require 5.004 ;
 
@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA ) ;
 
-$VERSION = '1.14' ;
+$VERSION = '1.15' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -53,7 +53,13 @@ sub Populate {
         -yscrollcommand => [ \&_listbox_scroll, $scrollbar, $list, $win ] ) ;
     $scrollbar->configure( -command => [ $list => 'yview' ] ) ;
 
-    $list->insert( 'end', sort _by_colour keys %{$win->{NAME}} ) ;
+    {
+        my %cache ; # Memoise sort.
+        $list->insert( 'end', sort {
+                ( $cache{$a} ||= &_canonical_colour( $a ) ) cmp
+                ( $cache{$b} ||= &_canonical_colour( $b ) ) 
+            } keys %{$win->{NAME}} ) ;
+    }
 
     $list->bind( '<Down>', [ \&_set_colour_from_list, $win ] ) ;
     $list->bind( '<Up>',   [ \&_set_colour_from_list, $win ] ) ;
@@ -103,8 +109,8 @@ sub Populate {
         $win->bind( "<${char}>",         [ \&_close, $win, $button ] ) ;
     }
 
-    $win->bind( "<Return>",    [ \&_close, $win, 'OK' ] ) ;
-    $win->bind( "<Escape>",    [ \&_close, $win, 'Cancel' ] ) ;
+    $win->bind( "<Return>", [ \&_close, $win, 'OK' ] ) ;
+    $win->bind( "<Escape>", [ \&_close, $win, 'Cancel' ] ) ;
 
     # Set initial colour if given.
     if( defined $colour ) {
@@ -128,27 +134,19 @@ sub Populate {
 
 
 #############################
-sub _by_colour {
-    my( $x, $y ) = ( lc $a, lc $b ) ;
+sub _canonical_colour {
+    local $_ = lc shift ; 
 
     # We try to get similar colours to sort together.
-    $x =~ s/pale//o ;
-    $x =~ s/light//o ;
-    $x =~ s/medium//o ;
-    $x =~ s/dark//o ;
-    $x =~ s/deep//o ;
-    $x =~ s/grey/gray/o ;
-    $x =~ s/(\D\d)$/0$1/o ;
+    s/pale//o ;
+    s/light//o ;
+    s/medium//o ;
+    s/dark//o ;
+    s/deep//o ;
+    s/grey/gray/o ;
+    s/(\D\d)$/0$1/o ;
 
-    $y =~ s/pale//o ;
-    $y =~ s/light//o ;
-    $y =~ s/medium//o ;
-    $y =~ s/dark//o ;
-    $y =~ s/deep//o ;
-    $y =~ s/grey/gray/o ;
-    $y =~ s/(\D\d)$/0$1/o ;
-
-    $x cmp $y ;
+    $_ ; 
 }
 
 
@@ -170,11 +168,9 @@ sub _name2hex {
     $colour[3] =~ s/\b(\w)/\u$1/go ; # Colour Name
     $colour[4] = $colour[3] ;
     $colour[4] =~ s/\s+//go ;        # ColourName
-    $colour[5] =~ s/\d+$//o ;        # Remove trailing digits
-    $colour[6] =~ s/\d+$//o ;
-    $colour[7] =~ s/\d+$//o ;
-    $colour[8] =~ s/\d+$//o ;
-    $colour[9] =~ s/\d+$//o ;
+    for my $i ( 5..9 ) {
+        $colour[$i] =~ s/\d+$//o ;   # Remove trailing digits
+    }
 
     my $hex ;
 
@@ -232,7 +228,7 @@ sub _read_rgb {
             chomp ;
             my @array = split ; 
             if( scalar @array == 4 ) {
-                my $hex = sprintf "%02X%02X%02X", $array[0], $array[1], $array[2] ;
+                my $hex = sprintf "%02X%02X%02X", @array[0..2] ;
                 # We only use the first name for a given colour.
                 if( not exists $win->{HEX}{$hex} ) {
                     $win->{HEX}{$hex}       = $array[3] ;
@@ -494,6 +490,8 @@ ColourChooser can be slow to load because rgb.txt is large.
 1999/08/05  Just changed the files to make them more CPAN friendly.
 
 1999/08/08  Changed licence to LGPL.
+
+1999/08/29  Minor code changes.
 
 
 =head1 AUTHOR
