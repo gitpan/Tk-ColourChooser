@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.22 1999/09/04 17:51:52 root Exp root $
+# $Id: ColourChooser.pm,v 1.22 1999/09/04 17:51:52 root Exp $
 
 require 5.004 ;
 
@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA ) ;
 
-$VERSION = '1.17' ;
+$VERSION = '1.18' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -497,6 +497,11 @@ ColourChooser can be slow to load because rgb.txt is large.
 
 1999/09/04  Removed ColourChooser.t - it was only a simple example but being
             interactive messes up CPAN's automatic testing. Plus tiny fixes.
+
+1999/09/06  Reinstated the test program, it is now called `example'. NB This
+            module is incompatible with Tk800.015 (which I believe is broken);
+            it works fine with earlier Tk8 and Tk4 versions and is expected to
+            work with Tk800.016 onwards.
 
 
 =head1 AUTHOR
