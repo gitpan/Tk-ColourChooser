@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.21 1999/08/29 19:12:39 root Exp root $
+# $Id: ColourChooser.pm,v 1.22 1999/09/04 17:51:52 root Exp root $
 
 require 5.004 ;
 
@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA ) ;
 
-$VERSION = '1.16' ;
+$VERSION = '1.17' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -144,7 +144,7 @@ sub _canonical_colour {
     s/dark//o ;
     s/deep//o ;
     s/grey/gray/o ;
-    s/(\D\d)$/0$1/o ;
+    s/(\D)(\d)$/${1}0$2/o ;
 
     $_ ; 
 }
@@ -494,6 +494,9 @@ ColourChooser can be slow to load because rgb.txt is large.
 1999/08/29  Minor code changes.
 
 1999/09/01  Added Makefile.PL.
+
+1999/09/04  Removed ColourChooser.t - it was only a simple example but being
+            interactive messes up CPAN's automatic testing. Plus tiny fixes.
 
 
 =head1 AUTHOR
