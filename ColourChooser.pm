@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.22 1999/09/04 17:51:52 root Exp $
+# $Id: ColourChooser.pm,v 1.26 1999/09/21 22:20:38 root Exp root $
 
 require 5.004 ;
 
@@ -11,9 +11,9 @@ use Carp ;
 
 require Tk::Toplevel ;
 
-use vars qw( $VERSION @ISA ) ;
+use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.18' ;
+$VERSION = '1.30' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -24,11 +24,14 @@ Construct Tk::Widget 'ColourChooser' ;
 sub Populate { 
     my( $win, $args ) = @_ ;
 
-    $args->{-title}  = 'Colour Chooser' unless defined $args->{-title} ;
-    my $hexonly      = delete $args->{-hexonly} ;
-    $win->{HEX_ONLY} = defined $hexonly and $hexonly ? 1 : 0 ;
-    my $transparent  = delete $args->{-transparent} ;
-    my $colour       = delete $args->{-colour} ;
+    $win->{-language} = delete $args->{-language} || 'en' ; 
+    $win->{-language} = 'en' if $win->{-language} eq 'english' ; # Backward compatibility.
+    $args->{-title}   = $Translate{$win->{-language}}{-title} 
+                        unless defined $args->{-title} ;
+    my $hexonly       = delete $args->{-hexonly} ;
+    $win->{HEX_ONLY}  = defined $hexonly and $hexonly ? 1 : 0 ;
+    my $transparent   = delete $args->{-transparent} ;
+    my $colour        = delete $args->{-colour} ;
 
     $win->SUPER::Populate( $args ) ;
 
@@ -70,19 +73,19 @@ sub Populate {
     &_set_list( $win, 0 ) ;
 
     # Colour sliders.
-    foreach my $scale_name ( 'Red', 'Green', 'Blue' ) {
+    foreach my $colour ( qw( red green blue ) ) { 
         my $scale = $win->Scale(
             -orient       => 'horizontal',
             -from         => 0,
             -to           => 255,
             -tickinterval => 25,
-            -label        => $scale_name,
-            -fg           => 'dark' . lc $scale_name,
+            -label        => $Translate{$win->{-language}}{'-' . $colour},
+            -fg           => "dark$colour",
             '-length'     => 300,
             )->pack( -fill => 'x' ) ;
-        $win->{'-' . lc $scale_name} = 0 ;
+        $win->{'-' . $colour} = 0 ;
         $scale->configure( 
-            -variable => \$win->{'-' . lc $scale_name}, 
+            -variable => \$win->{'-' . $colour}, 
             -command  => [ \&_set_colour, $win ],
             ) ;
     }
@@ -90,8 +93,10 @@ sub Populate {
     # Create buttons.
     $Frame  = $win->Frame()->pack() ;
     my $column = 0 ;
-    foreach my $button ( 'OK', 'Transparent', 'Cancel' ) {
-        next if $button eq 'Transparent' and 
+    foreach my $button ( $Translate{$win->{-language}}{-ok},
+                         $Translate{$win->{-language}}{-transparent},
+                         $Translate{$win->{-language}}{-cancel} ) {
+        next if $button eq $Translate{$win->{-language}}{-transparent} and 
                 defined $transparent and
                         $transparent == 0 ;
 
@@ -109,8 +114,10 @@ sub Populate {
         $win->bind( "<${char}>",         [ \&_close, $win, $button ] ) ;
     }
 
-    $win->bind( "<Return>", [ \&_close, $win, 'OK' ] ) ;
-    $win->bind( "<Escape>", [ \&_close, $win, 'Cancel' ] ) ;
+    $win->bind( "<Return>", 
+        [ \&_close, $win, $Translate{$win->{-language}}{-ok} ] ) ;
+    $win->bind( "<Escape>", 
+        [ \&_close, $win, $Translate{$win->{-language}}{-cancel} ] ) ;
 
     # Set initial colour if given.
     if( defined $colour ) {
@@ -339,10 +346,10 @@ sub _close {
     }
     my $button = shift ;
 
-    if( $button eq 'Transparent' ) {
+    if( $button eq $Translate{$win->{-language}}{-transparent} ) {
         $win->{-colour} = 'None' ;
     }
-    elsif( $button eq 'Cancel' ) {
+    elsif( $button eq $Translate{$win->{-language}}{-cancel} ) {
         $win->{-colour} = '' ;
     }
     else {
@@ -357,6 +364,40 @@ sub _close {
     }
 
     $win->{-colour} ;
+}
+
+
+#############################
+BEGIN {
+    %Translate = (
+        'de' => {
+            -title       => 'Farbe Chooser',
+            -red         => 'Rot',
+            -blue        => 'Blau',
+            -green       => 'Grün',
+            -ok          => 'OK',
+            -transparent => 'Transparent',
+            -cancel      => 'Löschen',
+            },
+        'en' => {
+            -title       => 'Colour Chooser',
+            -red         => 'Red',
+            -blue        => 'Blue',
+            -green       => 'Green',
+            -ok          => 'OK',
+            -transparent => 'Transparent',
+            -cancel      => 'Cancel',
+            },
+        'fr' => {
+            -title       => 'Couleur Chooser',
+            -red         => 'Rouge',
+            -blue        => 'Bleu',
+            -green       => 'Vert',
+            -ok          => 'OK',
+            -transparent => 'Transparent',
+            -cancel      => 'Annulent',
+            },
+         ) ;
 }
 
 
@@ -390,6 +431,7 @@ ColourChooser - Perl/Tk module providing a Colour selection dialogue box.
     # The title may also be overridden; and we can insist that only hex values
     # are returned rather than colour names. We can disallow transparent.
     my $col_dialog = $Window->ColourChooser( 
+                        -language    => 'en', # Or 'de' or 'fr'.
                         -title       => 'Select a colour',
                         -colour      => '0A057C',
                         -transparent => 0,
@@ -409,8 +451,17 @@ clicking the colour list.
 =head2 Options
 
 =over 4
+
+=item C<-language>
+This is optional and allows you to set the language for the title and labels.
+Valid values are C<en> (english), C<de> (german), C<fr> (french) and
+C<english> (for backward compatibility) which is also the default.
+Translations are by Babelfish. Other languages will be added if people provide
+translations.
+
 =item C<-title>  
-This is optional and allows you to set the title. Default is 'Colour Chooser'.
+This is optional and allows you to set the title. Default is 'Colour Chooser'
+in the C<-language> specified.
 
 =item C<-colour> 
 This is optional and allows you to specify the colour that is shown when the
@@ -452,7 +503,9 @@ Transparent is pressed by a mouse click or <t> or <Control-t> or <Alt-t>.
 
 Pressing Cancel will return an empty string.
 
-Cancel is pressed by a mouse click or <Escape> or <c> or <Control-c> or <Alt-c>.
+Cancel is pressed by a mouse click or <Escape> or <c> or <Control-c> or
+<Alt-c>. (Note that if the language is not english then the letter to press
+will be the first letter of the translation of the word 'Cancel'.
 
 =head1 INSTALLATION
 
@@ -467,42 +520,6 @@ you will only be able to specify colours by RGB value.
 ColourChooser does almost no error checking.
 
 ColourChooser can be slow to load because rgb.txt is large.
-
-=head1 CHANGES
-
-1999/01/29  First version.
-
-1999/02/15  Improved handling of initial colour so that it copes better with
-            the variety of valid colour name inputs.
-
-1999/02/17  If a colour is given as lowercase hex it is now properly
-            recognised.
-
-1999/02/23  Should now be Windows compatible.
-
-1999/03/02  Now when you scroll with the scrollbar both the colourname and the
-            colour shown are updated (the same as when you move up and down
-            with the arrow keys).
-
-1999/04/21  Updating the colour when you move the scrollbar with the mouse 
-            is buggy -- can't figure out why so have reverted.
-
-1999/08/05  Just changed the files to make them more CPAN friendly.
-
-1999/08/08  Changed licence to LGPL.
-
-1999/08/29  Minor code changes.
-
-1999/09/01  Added Makefile.PL.
-
-1999/09/04  Removed ColourChooser.t - it was only a simple example but being
-            interactive messes up CPAN's automatic testing. Plus tiny fixes.
-
-1999/09/06  Reinstated the test program, it is now called `example'. NB This
-            module is incompatible with Tk800.015 (which I believe is broken);
-            it works fine with earlier Tk8 and Tk4 versions and is expected to
-            work with Tk800.016 onwards.
-
 
 =head1 AUTHOR
 
