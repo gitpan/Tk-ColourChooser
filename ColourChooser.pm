@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.26 1999/09/21 22:20:38 root Exp root $
+# $Id: ColourChooser.pm,v 1.27 1999/10/01 20:16:34 root Exp root $
 
 require 5.004 ;
 
@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.30' ;
+$VERSION = '1.40' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -309,28 +309,15 @@ sub _set_list {
 
 #############################
 sub Show {
-    my( $win ) = @_ ;
-
-    croak "ColourChooser Show requires at least 1 argument" if scalar @_ < 1 ;
-
-    my $old_focus = $win->focusSave ;
-    my $old_grab  = $win->grabSave ;
+    my $win = shift ;
 
     $win->Popup() ; 
-    $win->grab ;
-    $win->waitVisibility ;
-    $win->update ;
 
     my $list = $win->{COLOUR_LIST} ;
     $list->focus ;
 
     $win->waitVariable( \$win->{-colour} ) ;
-
-    $win->grabRelease ;
     $win->withdraw ;
-
-    &$old_focus ;
-    &$old_grab ;
 
     $win->{-colour} ;
 }

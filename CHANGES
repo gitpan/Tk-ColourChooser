@@ -1,3 +1,8 @@
+1999/10/01
+
+Changed the Show() method so that it is now compatible with Tk800.015 as well
+as earlier Tk800 versions.
+
 1999/09/21
 
 I've now had a go at adding 'de' (german) and 'fr' (french) as valid -language
