@@ -1,23 +1,29 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.29 2000/01/19 22:35:53 root Exp root $
+# $Id: ColourChooser.pm,v 1.32 2000/05/05 16:40:27 root Exp $
 
 require 5.004 ;
 
 use strict ;
 
-use Tk ;
 use Carp ;
+use Symbol ;
+use Tk ;
 
 require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.41' ;
+$VERSION = '1.50' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
 Construct Tk::Widget 'ColourChooser' ;
+
+# Global hashes available to all instances
+my( %Name2hex, %Hex2name ) ;
+my $Loaded ; # Flag indicating whether we're read the colour data or not.
+
 
 #############################
 sub Populate { 
@@ -56,13 +62,7 @@ sub Populate {
         -yscrollcommand => [ \&_listbox_scroll, $scrollbar, $list, $win ] ) ;
     $scrollbar->configure( -command => [ $list => 'yview' ] ) ;
 
-    {
-        my %cache ; # Memoise sort.
-        $list->insert( 'end', sort {
-                ( $cache{$a} ||= &_canonical_colour( $a ) ) cmp
-                ( $cache{$b} ||= &_canonical_colour( $b ) ) 
-            } keys %{$win->{NAME}} ) ;
-    }
+    $list->insert( 'end', sort { lc $a cmp lc $b } keys %Name2hex ) ;
 
     $list->bind( '<Down>', [ \&_set_colour_from_list, $win ] ) ;
     $list->bind( '<Up>',   [ \&_set_colour_from_list, $win ] ) ;
@@ -121,14 +121,17 @@ sub Populate {
 
     # Set initial colour if given.
     if( defined $colour ) {
-        if( $colour =~ 
+        if( lc $colour eq 'none' ) {
+            $win->{-red} = $win->{-green} = $win->{-blue} = 0 ;
+        }
+        elsif( $colour =~ 
             /^#?([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/o ) {
             $win->{-red}   = hex $1 ; 
             $win->{-green} = hex $2 ; 
             $win->{-blue}  = hex $3 ;
         }
         else {
-            my $hex = &_name2hex( $win, $colour ) ;
+            my $hex        = $Name2hex{$colour} ;
             $win->{-red}   = hex substr( $hex, 0, 2 ) ; 
             $win->{-green} = hex substr( $hex, 2, 2 ) ; 
             $win->{-blue}  = hex substr( $hex, 4, 2 ) ;
@@ -137,69 +140,6 @@ sub Populate {
     }
  
     $win->{-colour} = undef ;
-}
-
-#############################
-sub _canonical_colour {
-    local $_ = lc shift ; 
-
-    # We try to get similar colours to sort together.
-    s/pale//o ;
-    s/light//o ;
-    s/medium//o ;
-    s/dark//o ;
-    s/deep//o ;
-    s/grey/gray/o ;
-    s/(\D)(\d)$/${1}0$2/o ;
-
-    $_ ; 
-}
-
-#############################
-sub _name2hex {
-
-    my $win    = shift ;
-    my $colour = shift ;
-
-    my @colour ;
-    # Valid colour names come in a variety so we try to find the one
-    # intended...
-    foreach my $i ( 0..9 ) {
-        $colour[$i] = $colour ;      # Colour name 
-    }
-    $colour[1] =~ s/\s+//go ;        # Colourname
-    $colour[2] = lc $colour ;        # colour name
-    $colour[3] = $colour[2] ;
-    $colour[3] =~ s/\b(\w)/\u$1/go ; # Colour Name
-    $colour[4] = $colour[3] ;
-    $colour[4] =~ s/\s+//go ;        # ColourName
-    for my $i ( 5..9 ) {
-        $colour[$i] =~ s/\d+$//o ;   # Remove trailing digits
-    }
-
-    my $hex ;
-
-    foreach my $colour1 ( @colour ) {
-        my $colour2 = $colour1 ;
-
-        if( $colour1 =~ /[Gg]ray/o ) {
-           $colour2 =~ s/([Gg])ray/${1}rey/go ; 
-        }
-        if( $colour1 =~ /[Gg]rey/o ) {
-           $colour2 =~ s/([Gg])rey/${1}ray/go ; 
-        }
-
-        if( exists $win->{NAME}{$colour1} ) {
-            $hex = $win->{NAME}{$colour1} ;
-        }
-        elsif( exists $win->{NAME}{$colour2} ) {
-            $hex = $win->{NAME}{$colour2} ;
-        }
-
-        last if defined $hex ;
-    }
-
-    $hex or '000000' ;
 }
 
 #############################
@@ -213,7 +153,7 @@ sub _find_rgb {
         ) {
         return $file if -e $file ;
     }
-    carp "Failed to find an rgb.txt file" ;
+    carp "Failed to find `rgb.txt'" ;
 
     undef ;
 }
@@ -222,27 +162,31 @@ sub _find_rgb {
 sub _read_rgb {
     my $win = shift ;
 
+    return if $Loaded ;
+    $Loaded = 1 ;
+
     my $file = &_find_rgb ;
 
     if( defined $file ) {
-        open RGB, $file or croak $! ;
+        $Name2hex{'_Unnamed'} = '000000' ;
+        $Hex2name{'000000'}  = '_Unnamed' ;
+        my $fh = gensym ;
+        open $fh, $file or croak "Failed to open `$file': $!" ;
         local $_ ;
-        while( <RGB> ) {
+        while( <$fh> ) {
             chomp ;
             my @array = split ; 
             if( scalar @array == 4 ) {
                 my $hex = sprintf "%02X%02X%02X", @array[0..2] ;
                 # We only use the first name for a given colour.
-                if( not exists $win->{HEX}{$hex} ) {
-                    $win->{HEX}{$hex}       = $array[3] ;
-                    $win->{NAME}{$array[3]} = $hex ;
+                if( not exists $Name2hex{$array[3]} ) {
+                    $Name2hex{$array[3]} = $hex ;
+                    $Hex2name{$hex}      = $array[3] ;
                 }
             }
         }
-        close RGB ;
+        close $fh or carp "Failed to close `$file': $!" ;
     }
-
-    $win->{NAME}{' Unnamed'} = '0000000' ;
 }
 
 #############################
@@ -263,10 +207,10 @@ sub _set_colour {
                 $win->{-red}, $win->{-green}, $win->{-blue} ;
 
     my $index = 0 ;
-    if( exists $win->{HEX}{$hex} ) {
+    if( exists $Hex2name{$hex} ) {
         my $list = $win->{COLOUR_LIST} ;
         for( $index = 0 ; $index < $list->size ; $index++ ) {
-            last if $list->get( $index ) eq $win->{HEX}{$hex} ;
+            last if $list->get( $index ) eq $Hex2name{$hex} ;
         }                    
     }
     &_set_list( $win, $index ) ;
@@ -280,10 +224,10 @@ sub _set_colour_from_list {
 
     $list->selectionSet( 'active' ) ;
     my $colour     = $list->get( 'active' ) ;
-    my $hex        = $win->{NAME}{$colour} ;
-    $win->{-red}   = hex( substr( $hex, 0, 2 ) ) ; 
-    $win->{-green} = hex( substr( $hex, 2, 2 ) ) ; 
-    $win->{-blue}  = hex( substr( $hex, 4, 2 ) ) ; 
+    my $hex        = $Name2hex{$colour} ;
+    $win->{-red}   = hex substr( $hex, 0, 2 ) ; 
+    $win->{-green} = hex substr( $hex, 2, 2 ) ; 
+    $win->{-blue}  = hex substr( $hex, 4, 2 ) ; 
 
     &_update_colour( $win, $hex ) ; 
 }
@@ -346,8 +290,8 @@ sub _close {
     else {
         my $hex = sprintf "%02X%02X%02X", 
                     $win->{-red}, $win->{-green}, $win->{-blue} ;
-        if( exists $win->{HEX}{$hex} and not $win->{HEX_ONLY} ) {
-            $win->{-colour} = $win->{HEX}{$hex} ;
+        if( exists $Hex2name{$hex} and not $win->{HEX_ONLY} ) {
+            $win->{-colour} = $Hex2name{$hex} ;
         }
         else {
             $win->{-colour} = "#$hex" ;
@@ -513,7 +457,9 @@ you will only be able to specify colours by RGB value.
 
 Does almost no error checking.
 
-Can be slow to load because rgb.txt is large.
+Can be slow to load because rgb.txt is large; however we now load a single
+instance of the colour names when the module is first used and these names are
+then shared.
 
 If you scroll the list by keyboard or use the mouse to move the colour sliders
 the colour updates as you go; but if you use the mouse on the scrollbar you

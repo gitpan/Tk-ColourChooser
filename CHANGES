@@ -1,3 +1,10 @@
+2000/05/05
+
+Changed the handling of colour names internally; should be faster to load and
+also should use less memory since all instances now share the same colour name
+data.
+
+
 2000/01/19
 
 Added -showhex option which if set to 1, (default is 0), will show the hex

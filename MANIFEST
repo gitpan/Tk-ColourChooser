@@ -1,5 +1,6 @@
 ColourChooser.pm
 example
+t/colourchooser.t
 MANIFEST
 Makefile.PL
 README
