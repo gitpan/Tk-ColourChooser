@@ -1,0 +1,142 @@
+=head1 NAME
+
+ColourChooser - Perl/Tk module providing a Colour selection dialogue box.
+
+=head1 SYNOPSIS
+
+    use Tk::ColourChooser ; 
+
+    my $col_dialog = $Window->ColourChooser ;
+    my $colour     = $col_dialog->Show ;
+    if( $colour ) {
+        # They pressed OK and the colour chosen is in $colour - could be
+        # transparent which is 'None' unless -transparent is set.
+    }
+    else {
+        # They cancelled.
+    }
+
+    # May optionally have the colour initialised.
+    my $col_dialog = $Window->ColourChooser( -colour => 'green' ) ;
+    my $col_dialog = $Window->ColourChooser( -colour => '#0A057C' ) ;
+
+    # The title may also be overridden; and we can insist that only hex values
+    # are returned rather than colour names. We can disallow transparent.
+    my $col_dialog = $Window->ColourChooser( 
+                        -title       => 'Select a colour',
+                        -colour      => '0A057C',
+                        -transparent => 0,
+                        -hexonly     => 1,
+                        ) ;
+
+=head1 DESCRIPTION
+
+ColourChooser is a dialogue box which allows the user to pick a colour from
+the list in rgb.txt (supplied with X Windows), or to create a colour by
+setting RGB (red, green, blue) values with slider controls.
+
+You can scroll through all the named colours by using the <Down> and <Up>
+arrow keys on the keyboard or by clicking the mouse on the scrollbar and then
+clicking the colour list.
+
+=head2 Options
+
+=over 4
+=item C<-title>  
+This is optional and allows you to set the title. Default is 'Colour Chooser'.
+
+=item C<-colour> 
+This is optional and allows you to specify the colour that is shown when the
+dialogue is invoked. It may be specified as a colour name from rgb.txt or as a
+six digit hex number with an optional leading hash, i.e. as 'HHHHHH' or
+'#HHHHHH'. Default is 'black'.
+
+=item C<-hexonly>
+This is optional. If set to 1 it forces the ColourChooser to only return
+colours as hex numbers in Tk format ('#HHHHHH'); if set to 0 it returns
+colours as names if they are named in rgb.txt, and as hex numbers if they have
+no name. Transparent is always returned as 'None' however. Default is 0.
+
+=item C<-transparent>
+This is optional. If set to 0 it stops ColourChooser offering the Transparent
+button so that only valid colours may be chosen - or cancel. Default is 1.
+=back
+
+The user has three options: 
+
+=head2 OK
+
+Pressing OK will return the selected colour, as a name if it has one or as an
+RGB value if it doesn't. (Colours which do not have names are listed as
+'Unnamed' in the colour list box.) If the C<-hexonly> option has been specified
+the colour is always returned as a Tk colour hex value, i.e. in the form
+'#HHHHHH' except if Transparent is chosen in which case 'None' is returned.
+
+OK is pressed by a mouse click or <Return> or <o> or <Control-o> or <Alt-o>.
+
+=head2 Transparent
+
+Pressing Transparent will return the string 'None' which is xpm's name for
+transparent.
+
+Transparent is pressed by a mouse click or <t> or <Control-t> or <Alt-t>.
+
+=head2 Cancel
+
+Pressing Cancel will return an empty string.
+
+Cancel is pressed by a mouse click or <Escape> or <c> or <Control-c> or <Alt-c>.
+
+=head1 INSTALLATION
+
+ColourChooser.pm should be placed in any Tk directory in any lib directory in
+Perl's %INC path, for example, '/usr/lib/perl5/Tk'.
+
+ColourChooser looks for the file rgb.txt on your system - if it can't find it
+you will only be able to specify colours by RGB value.
+
+=head1 BUGS
+
+ColourChooser does almost no error checking.
+
+ColourChooser can be slow to load because rgb.txt is large.
+
+=head1 CHANGES
+
+1999/01/29  First version.
+
+1999/02/15  Improved handling of initial colour so that it copes better with
+            the variety of valid colour name inputs.
+
+1999/02/17  If a colour is given as lowercase hex it is now properly
+            recognised.
+
+1999/02/23  Should now be Windows compatible.
+
+1999/03/02  Now when you scroll with the scrollbar both the colourname and the
+            colour shown are updated (the same as when you move up and down
+            with the arrow keys).
+
+1999/04/21  Updating the colour when you move the scrollbar with the mouse 
+            is buggy -- can't figure out why so have reverted.
+
+1999/08/05  Just changed the files to make them more CPAN friendly.
+
+
+=head1 AUTHOR
+
+Mark Summerfield. I can be contacted as <summer@chest.ac.uk> -
+please include the word 'colourchooser' in the subject line.
+
+The code draws from Stephen O. Lidie's work.
+
+=head1 COPYRIGHT
+
+Copyright (c) Mark Summerfield 1999. All Rights Reserved.
+
+This module may be used/distributed/modified under the same terms as Perl
+itself.
+
+=cut
+
+
