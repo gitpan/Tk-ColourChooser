@@ -1,6 +1,6 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
 
-# $Id: ColourChooser.pm,v 1.19 1999/04/21 19:57:45 root Exp $
+# $Id: ColourChooser.pm,v 1.20 1999/08/08 15:17:31 root Exp $
 
 require 5.004 ;
 
@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA ) ;
 
-$VERSION = '1.13' ;
+$VERSION = '1.14' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -493,6 +493,8 @@ ColourChooser can be slow to load because rgb.txt is large.
 
 1999/08/05  Just changed the files to make them more CPAN friendly.
 
+1999/08/08  Changed licence to LGPL.
+
 
 =head1 AUTHOR
 
@@ -505,8 +507,7 @@ The code draws from Stephen O. Lidie's work.
 
 Copyright (c) Mark Summerfield 1999. All Rights Reserved.
 
-This module may be used/distributed/modified under the same terms as Perl
-itself.
+This module may be used/distributed/modified under the LGPL. 
 
 =cut
 

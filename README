@@ -122,6 +122,8 @@ ColourChooser can be slow to load because rgb.txt is large.
 
 1999/08/05  Just changed the files to make them more CPAN friendly.
 
+1999/08/08  Changed licence to LGPL.
+
 
 =head1 AUTHOR
 
@@ -134,8 +136,7 @@ The code draws from Stephen O. Lidie's work.
 
 Copyright (c) Mark Summerfield 1999. All Rights Reserved.
 
-This module may be used/distributed/modified under the same terms as Perl
-itself.
+This module may be used/distributed/modified under the LGPL. 
 
 =cut
 
