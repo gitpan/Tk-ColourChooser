@@ -13,7 +13,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA ) ;
 
-$VERSION = '1.15' ;
+$VERSION = '1.16' ;
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -492,6 +492,8 @@ ColourChooser can be slow to load because rgb.txt is large.
 1999/08/08  Changed licence to LGPL.
 
 1999/08/29  Minor code changes.
+
+1999/09/01  Added Makefile.PL.
 
 
 =head1 AUTHOR
