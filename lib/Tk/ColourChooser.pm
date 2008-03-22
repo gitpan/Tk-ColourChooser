@@ -1,10 +1,12 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
+use Data::Dumper;
 
 # $Id: ColourChooser.pm,v 1.32 2000/05/05 16:40:27 root Exp $
 
 require 5.004 ;
 
 use strict ;
+use warnings;
 
 use Carp ;
 use Symbol ;
@@ -14,7 +16,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.50' ;
+$VERSION = '1.51';
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -44,7 +46,12 @@ sub Populate {
     $win->withdraw ;
     $win->iconname( $args->{-title} ) ;
     $win->protocol( 'WM_DELETE_WINDOW' => sub { } ) ;
-    $win->transient( $win->toplevel ) ;
+    eval {
+        $win->transient( $win->toplevel ) ;
+    };
+    if ($@) {
+        warn "Error calling \$win->transient: $@\n";
+    }
     
     &_read_rgb( $win ) ;
     
@@ -132,9 +139,11 @@ sub Populate {
         }
         else {
             my $hex        = $Name2hex{$colour} ;
-            $win->{-red}   = hex substr( $hex, 0, 2 ) ; 
-            $win->{-green} = hex substr( $hex, 2, 2 ) ; 
-            $win->{-blue}  = hex substr( $hex, 4, 2 ) ;
+            if (defined $hex) {
+                $win->{-red}   = hex substr( $hex, 0, 2 ) ; 
+                $win->{-green} = hex substr( $hex, 2, 2 ) ; 
+                $win->{-blue}  = hex substr( $hex, 4, 2 ) ;
+            }
         }   
         &_set_colour( $win ) ; 
     }
@@ -145,17 +154,22 @@ sub Populate {
 #############################
 sub _find_rgb {
 
-    foreach my $file (
-        '/usr/local/lib/X11/rgb.txt',       '/usr/lib/X11/rgb.txt', 
-        '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
-        '/X11/R4/lib/rgb/rgb.txt',          '/usr/openwin/lib/X11/rgb.txt',
-        '/usr/X11R6/lib/X11/rgb.txt',
-        ) {
-        return $file if -e $file ;
+    if ($ENV{RGB_TEXT}) {
+        return $ENV{RGB_TEXT} if -r $ENV{RGB_TEXT};
     }
-    carp "Failed to find `rgb.txt'" ;
+    else {
+        foreach my $file (
+            '/usr/local/lib/X11/rgb.txt',       '/usr/lib/X11/rgb.txt', 
+            '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
+            '/X11/R4/lib/rgb/rgb.txt',          '/usr/openwin/lib/X11/rgb.txt',
+            '/usr/X11R6/lib/X11/rgb.txt',
+            ) {
+            return $file if -e $file ;
+        }
+    }
+    carp "Failed to find `rgb.txt', set \$ENV{RGB_TEXT} to the filename" ;
 
-    undef ;
+    return;
 }
 
 #############################
@@ -452,6 +466,21 @@ Perl's %INC path, for example, '/usr/lib/perl5/Tk'.
 
 ColourChooser looks for the file rgb.txt on your system - if it can't find it
 you will only be able to specify colours by RGB value.
+Or you can set the environment variable RGB_TEXT to the filename.
+
+=head1 METHODS
+
+=over 4
+
+=item Populate
+
+Inherited from Tk::Toplevel
+
+=item Show
+
+Inherited from Tk::Toplevel
+
+=back
 
 =head1 BUGS
 
@@ -468,8 +497,11 @@ is and any advice on how to fix it would be welcome.
 
 =head1 AUTHOR
 
-Mark Summerfield. I can be contacted as <summer@perlpress.com> -
-please include the word 'colourchooser' in the subject line.
+Tina Mueller
+
+=head1 ORIGINAL AUTHOR
+
+This module was developed by Mark Summerfield <summer@perlpress.com> until version 1.50.
 
 The code draws from Stephen O. Lidie's work.
 
@@ -477,7 +509,7 @@ The code draws from Stephen O. Lidie's work.
 
 Copyright (c) Mark Summerfield 1999-2000. All Rights Reserved.
 
-This module may be used/distributed/modified under the LGPL. 
+This module may be used/distributed/modified under the LGPL.
 
 =cut
 

@@ -7,6 +7,32 @@
 
 use strict ;
 
+use lib 'blib/lib';
+use Test::More tests => 2;
+
+BEGIN { use_ok('Tk::ColourChooser') };
+
+my $tty = -t STDIN;
+
+my $test_dialogue = $tty && $ENV{TEST_DIALOGUE};
+
+SKIP: {
+    skip "Set env TEST_DIALOGUE to true if you want to test the gui", 1 unless $test_dialogue;
+    my $Win = MainWindow->new;
+    my $colour = 'white';
+    my $col_dialog = $Win->ColourChooser( 
+        -language => 'en',
+        -colour   => $colour, 
+        -showhex  => 1,
+    );
+    $colour = $col_dialog->Show;
+    #warn __PACKAGE__.':'.__LINE__.": $colour\n";
+    ok(defined $colour, "Dialogue");
+}
+
+
+__END__
+
 use vars qw( $Loaded $Count $DEBUG $TRIMWIDTH ) ;
 
 BEGIN { $| = 1 ; print "1..1\n" ; }
