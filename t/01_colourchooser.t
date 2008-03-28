@@ -7,7 +7,7 @@
 
 use strict ;
 
-use lib 'blib/lib';
+#use lib 'blib/lib';
 use Test::More tests => 2;
 
 BEGIN { use_ok('Tk::ColourChooser') };

@@ -1,5 +1,5 @@
 package Tk::ColourChooser ;    # Documented at the __END__.
-use Data::Dumper;
+#use Data::Dumper;
 
 # $Id: ColourChooser.pm,v 1.32 2000/05/05 16:40:27 root Exp $
 
@@ -16,7 +16,7 @@ require Tk::Toplevel ;
 
 use vars qw( $VERSION @ISA %Translate ) ;
 
-$VERSION = '1.51';
+$VERSION = '1.52';
 
 @ISA = qw( Tk::Toplevel ) ;
 
@@ -46,12 +46,7 @@ sub Populate {
     $win->withdraw ;
     $win->iconname( $args->{-title} ) ;
     $win->protocol( 'WM_DELETE_WINDOW' => sub { } ) ;
-    eval {
-        $win->transient( $win->toplevel ) ;
-    };
-    if ($@) {
-        warn "Error calling \$win->transient: $@\n";
-    }
+    $win->transient( $win->parent ) ;
     
     &_read_rgb( $win ) ;
     

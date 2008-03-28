@@ -8,10 +8,14 @@ WriteMakefile
           'EXE_FILES' => [],
           'VERSION_FROM' => 'lib/Tk/ColourChooser.pm',
           'PREREQ_PM' => {
-                           'Test::More' => 0,
+                           'warnings' => 0,
+                           'Test::Pod::Coverage' => '0',
                            'Symbol' => 0,
-                           'Tk' => 0,
-                           'Carp' => 0
+                           'Test::Pod' => 0,
+                           'Carp' => 0,
+                           'strict' => 0,
+                           'Test::More' => 0,
+                           'Tk' => 0
                          }
         )
 ;

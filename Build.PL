@@ -8,12 +8,16 @@ my $build = Module::Build->new(
     module_name        => 'Tk::ColourChooser',
     dist_author        => 'Tina Mueller',
     requires => {
-        Tk     => 0,
-        Carp   => 0,
-        Symbol => 0,
+        Tk       => 0,
+        Carp     => 0,
+        Symbol   => 0,
+        strict   => 0,
+        warnings => 0,
     },
     build_requires => {
-        'Test::More' => 0,
+        'Test::More'          => 0,
+        'Test::Pod'           => 0,
+        'Test::Pod::Coverage' => 0.
     },
     recommends         => {
     },
